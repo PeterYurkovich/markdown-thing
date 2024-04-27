@@ -8,7 +8,6 @@ import (
 	"github.com/PeterYurkovich/markdown-thing/templates"
 )
 
-// go mux hello world
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
