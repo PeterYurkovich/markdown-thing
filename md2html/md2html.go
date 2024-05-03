@@ -1,4 +1,4 @@
-package main
+package md2html
 
 import (
 	"bytes"
@@ -12,13 +12,12 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-// InternalLinks are represented in markdown as [[fileName]] and are rendered as <a href="/fileName">fileName</a>
 type InternalLink struct {
 	ast.Leaf
 	Literal string
 }
 
-func markdownLookup(path string) string {
+func MarkdownLookup(path string) string {
 	path = fmt.Sprintf("markdown/%s.md", path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return "no"
@@ -40,25 +39,25 @@ func markdownLookup(path string) string {
 		}
 		output = append(output, buffer[:n]...)
 	}
-	return string(mdToHTML(output))
+	return string(MdToHTML(output))
 }
 
-func mdToHTML(md []byte) []byte {
+func MdToHTML(md []byte) []byte {
 	p := newMarkdownParser()
 	doc := p.Parse(md)
-	renderer := newCustomizedRender()
+	renderer := NewCustomizedRender()
 	return markdown.Render(doc, renderer)
 }
 
-func renderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+func RenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 	if leafNode, ok := node.(*InternalLink); ok {
-		renderInternalLink(w, leafNode, entering)
+		RenderInternalLink(w, leafNode, entering)
 		return ast.GoToNext, true
 	}
 	return ast.GoToNext, false
 }
 
-func renderInternalLink(w io.Writer, node *InternalLink, entering bool) (ast.WalkStatus, bool) {
+func RenderInternalLink(w io.Writer, node *InternalLink, entering bool) (ast.WalkStatus, bool) {
 	if entering {
 		io.WriteString(w, "<a href=\"/")
 		io.WriteString(w, node.Literal)
@@ -70,18 +69,18 @@ func renderInternalLink(w io.Writer, node *InternalLink, entering bool) (ast.Wal
 	return ast.GoToNext, false
 }
 
-func newCustomizedRender() *html.Renderer {
+func NewCustomizedRender() *html.Renderer {
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
 
 	opts := html.RendererOptions{
-		RenderNodeHook: renderHook,
+		RenderNodeHook: RenderHook,
 		Flags:          htmlFlags,
 	}
 	return html.NewRenderer(opts)
 }
 
-func parserHook(data []byte) (ast.Node, []byte, int) {
-	if node, d, n := parseInternalLink(data); node != nil {
+func ParserHook(data []byte) (ast.Node, []byte, int) {
+	if node, d, n := ParseInternalLink(data); node != nil {
 		return node, d, n
 	}
 	return nil, nil, 0
@@ -90,24 +89,22 @@ func parserHook(data []byte) (ast.Node, []byte, int) {
 func newMarkdownParser() *parser.Parser {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock | parser.Tables | parser.FencedCode
 	p := parser.NewWithExtensions(extensions)
-	p.Opts.ParserHook = parserHook
+	p.Opts.ParserHook = ParserHook
 	return p
 }
 
-func parseInternalLink(data []byte) (ast.Node, []byte, int) {
+func ParseInternalLink(data []byte) (ast.Node, []byte, int) {
 	var node *InternalLink
-	var d []byte
 	var n int
 	// find an internal link which starts with [[
 	if i := bytes.Index(data, []byte("[[")); i != -1 {
 		if i+2 < len(data) && data[i+1] == '[' {
 			if j := bytes.Index(data[i+2:], []byte("]]")); j != -1 {
 				node = &InternalLink{Literal: string(data[i+2 : i+2+j])}
-				d = data[:i+2+j]
-				n = i + 2 + j
+				n = i + 4 + j
 			}
 		}
 	}
 
-	return node, d, n
+	return node, []byte{}, n
 }

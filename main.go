@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PeterYurkovich/markdown-thing/md2html"
 	"github.com/PeterYurkovich/markdown-thing/templates"
 )
 
@@ -29,7 +30,7 @@ func main() {
 			return
 		}
 		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, markdownLookup(r.URL.Path[1:]))
+		fmt.Fprintf(w, md2html.MarkdownLookup(r.URL.Path[1:]))
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
