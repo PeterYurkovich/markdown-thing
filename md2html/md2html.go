@@ -2,9 +2,7 @@ package md2html
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"os"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -14,32 +12,8 @@ import (
 
 type InternalLink struct {
 	ast.Leaf
-	Literal string
-}
-
-func MarkdownLookup(path string) string {
-	path = fmt.Sprintf("markdown/%s.md", path)
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return "no"
-	}
-	file, err := os.Open(path)
-	if err != nil {
-		return "no"
-	}
-	defer file.Close()
-	buffer := make([]byte, 1024)
-	output := []byte{}
-	for {
-		n, err := file.Read(buffer)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return "no"
-		}
-		output = append(output, buffer[:n]...)
-	}
-	return string(MdToHTML(output))
+	Link string
+	Name string
 }
 
 func MdToHTML(md []byte) []byte {
@@ -60,9 +34,9 @@ func RenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool
 func RenderInternalLink(w io.Writer, node *InternalLink, entering bool) (ast.WalkStatus, bool) {
 	if entering {
 		io.WriteString(w, "<a href=\"/")
-		io.WriteString(w, node.Literal)
+		io.WriteString(w, node.Link)
 		io.WriteString(w, "\">")
-		io.WriteString(w, node.Literal)
+		io.WriteString(w, node.Name)
 		io.WriteString(w, "</a>")
 		return ast.GoToNext, true
 	}
@@ -100,11 +74,13 @@ func ParseInternalLink(data []byte) (ast.Node, []byte, int) {
 	if i := bytes.Index(data, []byte("[[")); i != -1 {
 		if i+2 < len(data) && data[i+1] == '[' {
 			if j := bytes.Index(data[i+2:], []byte("]]")); j != -1 {
-				node = &InternalLink{Literal: string(data[i+2 : i+2+j])}
-				n = i + 4 + j
+				link, found := GetLinkFromName(string(data[i+2 : i+2+j]))
+				if !found {
+					return node, []byte{}, n
+				}
+				return &link, []byte{}, i + 4 + j
 			}
 		}
 	}
-
 	return node, []byte{}, n
 }
