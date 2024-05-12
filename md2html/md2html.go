@@ -1,7 +1,6 @@
 package md2html
 
 import (
-	"bytes"
 	"io"
 
 	"github.com/gomarkdown/markdown"
@@ -14,6 +13,10 @@ type InternalLink struct {
 	ast.Leaf
 	Link string
 	Name string
+}
+
+type Text struct {
+	ast.Container
 }
 
 func MdToHTML(md []byte) []byte {
@@ -44,7 +47,7 @@ func RenderInternalLink(w io.Writer, node *InternalLink, entering bool) (ast.Wal
 }
 
 func NewCustomizedRender() *html.Renderer {
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	htmlFlags := html.CommonFlags
 
 	opts := html.RendererOptions{
 		RenderNodeHook: RenderHook,
@@ -53,34 +56,35 @@ func NewCustomizedRender() *html.Renderer {
 	return html.NewRenderer(opts)
 }
 
-func ParserHook(data []byte) (ast.Node, []byte, int) {
-	if node, d, n := ParseInternalLink(data); node != nil {
-		return node, d, n
-	}
-	return nil, nil, 0
-}
-
 func newMarkdownParser() *parser.Parser {
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock | parser.Tables | parser.FencedCode
-	p := parser.NewWithExtensions(extensions)
-	p.Opts.ParserHook = ParserHook
-	return p
+	parser := parser.NewWithExtensions(extensions)
+
+	prev := parser.RegisterInline('[', nil)
+	parser.RegisterInline('[', wikiLink(parser, prev))
+	return parser
 }
 
-func ParseInternalLink(data []byte) (ast.Node, []byte, int) {
-	var node *InternalLink
-	var n int
-	// find an internal link which starts with [[
-	if i := bytes.Index(data, []byte("[[")); i != -1 {
-		if i+2 < len(data) && data[i+1] == '[' {
-			if j := bytes.Index(data[i+2:], []byte("]]")); j != -1 {
-				link, found := GetLinkFromName(string(data[i+2 : i+2+j]))
-				if !found {
-					return node, []byte{}, n
-				}
-				return &link, []byte{}, i + 4 + j
-			}
+func wikiLink(_ *parser.Parser, fn parser.InlineParser) parser.InlineParser {
+	return func(p *parser.Parser, original []byte, offset int) (int, ast.Node) {
+		data := original[offset:]
+		n := len(data)
+		if n < 5 || data[1] != '[' {
+			return fn(p, original, offset)
 		}
+		i := 2
+		for i+1 < n && data[i] != ']' && data[i+1] != ']' {
+			i++
+		}
+		text := data[2 : i+1]
+		foundLink, found := GetLinkFromName(string(text))
+		if !found {
+			return fn(p, original, offset)
+		}
+		link := &ast.Link{
+			Destination: []byte(foundLink.Link),
+		}
+		ast.AppendChild(link, &ast.Text{Leaf: ast.Leaf{Literal: []byte(foundLink.Name)}})
+		return i + 4, link
 	}
-	return node, []byte{}, n
 }

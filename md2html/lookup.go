@@ -25,7 +25,7 @@ func GetLinkFromName(name string) (linkInfo InternalLink, found bool) {
 		}
 		if strings.HasSuffix(d.Name(), name+".md") {
 			// remove a markdown/ prefix and a .md suffix
-			fileNames = append(fileNames, InternalLink{Link: strings.TrimPrefix(path, "markdown/"), Name: strings.TrimSuffix(d.Name(), ".md")})
+			fileNames = append(fileNames, InternalLink{Link: strings.TrimPrefix(path, "markdown"), Name: strings.TrimSuffix(d.Name(), ".md")})
 		}
 		return nil
 	})
