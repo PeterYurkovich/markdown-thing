@@ -27,22 +27,6 @@ func MdToHTML(md []byte) []byte {
 }
 
 func RenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
-	if leafNode, ok := node.(*InternalLink); ok {
-		RenderInternalLink(w, leafNode, entering)
-		return ast.GoToNext, true
-	}
-	return ast.GoToNext, false
-}
-
-func RenderInternalLink(w io.Writer, node *InternalLink, entering bool) (ast.WalkStatus, bool) {
-	if entering {
-		io.WriteString(w, "<a href=\"/")
-		io.WriteString(w, node.Link)
-		io.WriteString(w, "\">")
-		io.WriteString(w, node.Name)
-		io.WriteString(w, "</a>")
-		return ast.GoToNext, true
-	}
 	return ast.GoToNext, false
 }
 
@@ -82,7 +66,8 @@ func wikiLink(_ *parser.Parser, fn parser.InlineParser) parser.InlineParser {
 			return fn(p, original, offset)
 		}
 		link := &ast.Link{
-			Destination: []byte(foundLink.Link),
+			Destination:          []byte(foundLink.Link),
+			AdditionalAttributes: []string{`class="text-vesper-highlight"`},
 		}
 		ast.AppendChild(link, &ast.Text{Leaf: ast.Leaf{Literal: []byte(foundLink.Name)}})
 		return i + 4, link
