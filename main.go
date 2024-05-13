@@ -20,12 +20,7 @@ func main() {
 	mux.Handle("/static/css/", http.FileServer(http.FS(staticCss)))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
-			w.Header().Set("Content-Type", "text/html")
-			template := templates.Hello("Peter")
-			err := template.Render(r.Context(), w)
-			if err != nil {
-				log.Println(err)
-			}
+			http.Redirect(w, r, "README.md", http.StatusMovedPermanently)
 			return
 		}
 		w.Header().Set("Content-Type", "text/html")
