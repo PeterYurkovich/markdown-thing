@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/PeterYurkovich/markdown-thing/md2html"
@@ -34,9 +35,31 @@ func TestInnerLinkLookupWithinText(t *testing.T) {
 }
 
 func TestCluster(t *testing.T) {
-	input := md2html.MarkdownLookup("Business/Red Hat/Notes/General/OpenShift/Kubernetes/Cluster.md")
+	input, err := md2html.MarkdownLookup("Business/Red Hat/Notes/General/OpenShift/Kubernetes/Cluster.md")
+	if err != nil {
+		t.Errorf("expected no error, got %s", err)
+	}
 	expected := "<h1 id=\"cluster\">Cluster</h1>\n\n<p>Primary Reference: <a class=\"text-vesper-highlight\" href=\"/Business/Red Hat/Notes/General/OpenShift/Kubernetes/Kubernetes.md\">Kubernetes</a></p>\n\n<hr>\n\n<p>When deploying <a class=\"text-vesper-highlight\" href=\"/Business/Red Hat/Notes/General/OpenShift/Kubernetes/Kubernetes.md\">Kubernetes</a> you receive a cluster. This cluster is made up of <a class=\"text-vesper-highlight\" href=\"/Business/Red Hat/Notes/General/OpenShift/Kubernetes/Objects/Node.md\">Node</a> which host <a class=\"text-vesper-highlight\" href=\"/Business/Red Hat/Notes/General/OpenShift/Kubernetes/Objects/Pod.md\">Pod</a> as well as a <a class=\"text-vesper-highlight\" href=\"/Business/Red Hat/Notes/General/OpenShift/Kubernetes/Control Pane.md\">Control Pane</a></p>\n"
 	if string(input) != string(expected) {
 		t.Errorf("expected %s, got %s", expected, input)
+	}
+}
+
+func Test404(t *testing.T) {
+	_, err := md2html.MarkdownLookup("DoesntExist.md")
+	if err == nil || !errors.Is(err, md2html.Error404) {
+		t.Errorf("expected no error, got %s", err)
+	}
+}
+func TestBlocked(t *testing.T) {
+	if !md2html.BlockedLink("Business/Accrisoft/Accrisoft MOC.md") {
+		t.Errorf("expected link to be blocked")
+	}
+}
+
+func Test404WithIgnoredLink(t *testing.T) {
+	_, err := md2html.MarkdownLookup(".obsidian/types.json")
+	if err == nil || !errors.Is(err, md2html.Error404) {
+		t.Errorf("expected no error, got %s", err)
 	}
 }
