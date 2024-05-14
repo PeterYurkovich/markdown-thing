@@ -72,6 +72,7 @@ func GetMarkdownTree() (Tree, error) {
 		Children:  map[string]Tree{},
 	}
 	err := filepath.WalkDir("markdown", func(path string, d os.DirEntry, err error) error {
+		path = strings.TrimPrefix(path, "markdown/")
 		if IgnoredLink(path) || BlockedLink(path) {
 			return nil
 		}
@@ -84,7 +85,11 @@ func GetMarkdownTree() (Tree, error) {
 		}
 		if strings.HasSuffix(d.Name(), ".md") {
 			// Walk down the tree to the correct node, adding directories as needed
-			tree.AddChild(strings.Split(path, "/")[1:], path)
+			if strings.Contains(path, "/") {
+				tree.AddChild(strings.Split(path, "/")[1:], path)
+			} else {
+				tree.AddChild([]string{path}, path)
+			}
 		}
 		return nil
 	})
