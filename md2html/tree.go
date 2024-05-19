@@ -103,3 +103,19 @@ func GetHTMLTree() (string, error) {
 	}
 	return tree.GetString(), nil
 }
+
+func GetLinkMarkdownMap() (map[string]string, error) {
+	tree, err := GetMarkdownTree()
+	if err != nil {
+		return nil, err
+	}
+	linkMap := map[string]string{}
+	for _, child := range tree.Children {
+		markdown, err := MarkdownLookup(child.Link)
+		if err != nil {
+			return nil, err
+		}
+		linkMap[child.Link] = markdown
+	}
+	return linkMap, nil
+}
