@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -42,7 +43,7 @@ func (t Tree) AddChild(linkSegments []string, fullLink string) error {
 	if !ok {
 		child = Tree{
 			Name:      linkSegments[0],
-			Link:      fullLink,
+			Link:      "",
 			Directory: true,
 			Children:  map[string]Tree{},
 		}
@@ -51,17 +52,22 @@ func (t Tree) AddChild(linkSegments []string, fullLink string) error {
 	return child.AddChild(linkSegments[1:], fullLink)
 }
 
-func (t Tree) GetString() string {
-	var output string
-	output += "<div>"
-	output += t.Link
+func (t Tree) GetSortedChildren() []Tree {
+	var children []Tree
 	for _, child := range t.Children {
-		output += "<div>"
-		output += child.GetString()
-		output += "</div>"
+		children = append(children, child)
 	}
-	output += "</div>"
-	return output
+	sort.Slice(children, func(i, j int) bool {
+		// list directories first then sort both directories and files alphabetically
+		if children[i].Directory && !children[j].Directory {
+			return true
+		}
+		if !children[i].Directory && children[j].Directory {
+			return false
+		}
+		return children[i].Name < children[j].Name
+	})
+	return children
 }
 
 func GetMarkdownTree() (Tree, error) {
@@ -86,7 +92,7 @@ func GetMarkdownTree() (Tree, error) {
 		if strings.HasSuffix(d.Name(), ".md") {
 			// Walk down the tree to the correct node, adding directories as needed
 			if strings.Contains(path, "/") {
-				tree.AddChild(strings.Split(path, "/")[1:], path)
+				tree.AddChild(strings.Split(path, "/"), path)
 			} else {
 				tree.AddChild([]string{path}, path)
 			}
@@ -94,14 +100,6 @@ func GetMarkdownTree() (Tree, error) {
 		return nil
 	})
 	return tree, err
-}
-
-func GetHTMLTree() (string, error) {
-	tree, err := GetMarkdownTree()
-	if err != nil {
-		return "", err
-	}
-	return tree.GetString(), nil
 }
 
 func GetLinkMarkdownMap() (map[string]string, error) {

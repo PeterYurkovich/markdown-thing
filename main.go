@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/PeterYurkovich/markdown-thing/md2html"
+	"github.com/PeterYurkovich/markdown-thing/server"
 	"github.com/PeterYurkovich/markdown-thing/templates"
 )
 
@@ -18,7 +19,7 @@ func main() {
 
 	mux.Handle("/static/css/", http.FileServer(http.FS(staticCss)))
 	mux.HandleFunc("/tree", func(w http.ResponseWriter, r *http.Request) {
-		tree, err := md2html.GetHTMLTree()
+		tree, err := md2html.GetMarkdownTree()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			template := templates.Error(http.StatusInternalServerError, "Internal Server Error")
@@ -29,14 +30,14 @@ func main() {
 			return
 		}
 		w.Header().Set("Content-Type", "text/html")
-		template := templates.Body(tree)
+		template := templates.TreeTemplate(tree)
 		err = template.Render(r.Context(), w)
 		if err != nil {
 			log.Println(err)
 		}
 		return
 	})
-	mux.HandleFunc("/", md2html.Server)
+	mux.HandleFunc("/", server.Server)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 

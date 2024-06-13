@@ -1,0 +1,12 @@
+package templates
+
+import "github.com/PeterYurkovich/markdown-thing/md2html"
+
+templ TreeTemplate(tree md2html.Tree) {
+    <div>
+      {tree.Name}
+      for _, child := range tree.GetSortedChildren() {
+        @TreeTemplate(child)
+      }
+    </div>
+}

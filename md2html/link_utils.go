@@ -7,9 +7,7 @@ import (
 
 func BlockedLink(link string) bool {
 	block_list := []string{
-		"Business/Accrisoft",
-		"Business/Research",
-		"Business/School",
+		"Business",
 		"Excalidraw",
 		"Hobbies",
 		"Personal",

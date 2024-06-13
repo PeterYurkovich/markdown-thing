@@ -1,10 +1,11 @@
-package md2html
+package server
 
 import (
 	"errors"
 	"log"
 	"net/http"
 
+	"github.com/PeterYurkovich/markdown-thing/md2html"
 	"github.com/PeterYurkovich/markdown-thing/templates"
 )
 
@@ -14,7 +15,7 @@ func Server(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "README.md", http.StatusMovedPermanently)
 		return
 	}
-	if BlockedLink(path) {
+	if md2html.BlockedLink(path) {
 		w.Header().Set("Content-Type", "text/html")
 		template := templates.Blocked(path)
 		err := template.Render(r.Context(), w)
@@ -24,9 +25,9 @@ func Server(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")
-	markdown, err := MarkdownLookup(path)
+	markdown, err := md2html.MarkdownLookup(path)
 	if err != nil {
-		if errors.Is(err, Error404) {
+		if errors.Is(err, md2html.Error404) {
 			w.WriteHeader(http.StatusNotFound)
 			template := templates.Error(http.StatusNotFound, "Not Found")
 			err := template.Render(r.Context(), w)
