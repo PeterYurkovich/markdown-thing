@@ -1,12 +1,16 @@
 package templates
 
-templ Body(content string) {
+templ Body(content templ.Component) {
     <link rel="stylesheet" href="/static/css/tailwind.css" />
     <body class="min-h-screen min-w-screen bg-vesper-bg text-vesper-text"> 
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col">
-                @templ.Raw(content)
+                @content
             </div>
         </div>
     </body>
+}
+
+templ RawBody(content string) {
+    @Body(templ.Raw(content))
 }

@@ -44,7 +44,7 @@ func Server(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	template := templates.Body(markdown)
+	template := templates.RawBody(markdown)
 	err = template.Render(r.Context(), w)
 	if err != nil {
 		log.Println(err)
