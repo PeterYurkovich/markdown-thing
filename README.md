@@ -11,3 +11,5 @@ To develope use:
 make watch
 ```
 which will watch for changes, then rebuild templates, update tailwind.css and reload the server.
+
+test
