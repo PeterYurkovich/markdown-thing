@@ -10,4 +10,4 @@ To develope use:
 ```bash
 make watch
 ```
-which will watch for changes, then rebuild templates, update tailwind.css and reload the server.
+which will watch for changes, then rebuild templates and reload the server.

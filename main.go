@@ -10,7 +10,6 @@ import (
 	"github.com/PeterYurkovich/markdown-thing/templates"
 )
 
-//go:generate bun tw-build
 //go:embed static/css
 var staticCss embed.FS
 
@@ -22,7 +21,7 @@ func main() {
 		tree, err := md2html.GetMarkdownTree()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			template := templates.Error(http.StatusInternalServerError, "Internal Server Error")
+			template := templates.ErrorPage(http.StatusInternalServerError, "Internal Server Error")
 			err := template.Render(r.Context(), w)
 			if err != nil {
 				log.Println(err)

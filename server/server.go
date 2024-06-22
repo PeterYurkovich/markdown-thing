@@ -29,7 +29,7 @@ func Server(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, md2html.Error404) {
 			w.WriteHeader(http.StatusNotFound)
-			template := templates.Error(http.StatusNotFound, "Not Found")
+			template := templates.ErrorPage(http.StatusNotFound, "Not Found")
 			err := template.Render(r.Context(), w)
 			if err != nil {
 				log.Println(err)
@@ -37,7 +37,7 @@ func Server(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		template := templates.Error(http.StatusInternalServerError, "Internal Server Error")
+		template := templates.ErrorPage(http.StatusInternalServerError, "Internal Server Error")
 		err := template.Render(r.Context(), w)
 		if err != nil {
 			log.Println(err)

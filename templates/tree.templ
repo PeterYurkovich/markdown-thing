@@ -11,7 +11,7 @@ templ TreeRecursion(tree md2html.Tree) {
     {tree.Name}
     <ul>
       for _, child := range tree.GetSortedChildren() {
-        <li class="pl-4">
+        <li style="padding-left: 1rem;">
           @TreeRecursion(child)
         </li>
       }

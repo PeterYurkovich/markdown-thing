@@ -64,7 +64,7 @@ func TreeRecursion(tree md2html.Tree) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, child := range tree.GetSortedChildren() {
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li class=\"pl-4\">")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li style=\"padding-left: 1rem;\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

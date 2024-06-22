@@ -1,6 +1,11 @@
 package templates
 
+import "fmt"
+
+templ ErrorPage(code int, message string) {
+    @Body(Error(code, message))
+}
+
 templ Error(code int, message string) {
-    <link rel="stylesheet" href="/static/css/tailwind.css" />
-    <div class="text-center text-orange-500 text-3xl">{string(rune(code)) + ": " + message}</div>
+    <div class="error">{fmt.Sprintf("Error %d: %s", code, message)}</div>
 }

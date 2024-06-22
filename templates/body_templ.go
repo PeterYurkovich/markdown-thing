@@ -23,7 +23,7 @@ func Body(content templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<link rel=\"stylesheet\" href=\"/static/css/tailwind.css\"><body class=\"min-h-screen min-w-screen bg-vesper-bg text-vesper-text\"><div class=\"max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8\"><div class=\"flex flex-col\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<link rel=\"stylesheet\" href=\"/static/css/markdown.css\"><body><div class=\"column\"><div class=\"content\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
